@@ -17,18 +17,14 @@ def load_data(selected_year):
     }
     data = pd.read_csv(files[selected_year])
     data['datetime'] = pd.to_datetime((data['datetime']), format='%Y-%m-%d %H:%M:%S')
-    # data = data.set_index('datetime')
+    data.rename(columns={'datetime': '时间'}, inplace=True)
     return data
-    # data = pd.read_csv('2023_load_data_clean.csv')
-    # data['datetime'] = pd.to_datetime((data['datetime']) ,format='%Y-%m-%d %H:%M:%S')
-    # # data = data.set_index('datetime')
-    # return data
 
 
 def load_data_2024():
     data = pd.read_csv('utilities/datasets/load_data_2024_cleaned.csv')
     data['datetime'] = pd.to_datetime((data['datetime']), format='%Y-%m-%d %H:%M:%S')
-    # data = data.set_index('datetime')
+    data.rename(columns={'datetime': '时间'}, inplace=True)
     return data
 
 
@@ -41,29 +37,29 @@ def description():
 
     with description:
         st.markdown('''
-        ### Introduction
+        ### 项目介绍
 
-        - This project focuses on developing an intelligent load forecasting system for enhanced energy management within smart grids.
-        - Employing an LSTM (Long Short-Term Memory) model, the project aims to predict daily power load patterns, contributing to efficient energy management.
+        - 本项目专注于开发智能负荷预测系统，以提升智能电网的能源管理效率。
+        - 采用 LSTM（长短期记忆网络）模型，旨在预测每日电力负荷模式，助力高效能源管理。
 
-        #### Objectives
+        #### 项目目标
 
-        1. **Implement Predictive Analytics:** Develop and implement an LSTM model to forecast daily power load patterns based on historical data from the Delhi State Load Dispatch Centre.
+        1. **实现预测分析：** 基于德里邦调度中心的历史数据，开发并实施 LSTM 模型来预测每日电力负荷模式。
 
-        2. **Enhance Energy Management:** Enable energy management within smart grids by providing real-time insights into power load patterns and energy consumption.
+        2. **提升能源管理：** 通过提供电力负荷模式和能源消耗的实时洞察，增强智能电网的能源管理能力。
 
-        3. **Design User-Friendly Interface:** Design a user-friendly dashboard providing real-time insights into past energy consumption and future load predictions, 
-        fostering accessibility and practical application.
+        3. **设计友好界面：** 设计用户友好的仪表板，提供历史能源消耗和未来负荷预测的实时洞察，
+        提升可访问性和实际应用价值。
 
-        #### Features
+        #### 主要功能
 
-        - Analyze historical power load data from the Delhi State Load Dispatch Centre (SLDC) for the years 2023 and 2024.
-        - Visualize daily, monthly, and yearly power load curves to identify trends and patterns.
-        - Access data collected at 5-minute intervals to predict future load patterns and energy consumption.
-        - The Machine Learning LSTM model predicts daily power load patterns based on historical data collected from the SLDC at 5-minute intervals.
+        - 分析德里邦调度中心（SLDC）2023 年和 2024 年的历史电力负荷数据。
+        - 可视化日、周、月负荷曲线，识别趋势和模式。
+        - 获取每 5 分钟采集一次的数据，预测未来负荷模式和能源消耗。
+        - 机器学习 LSTM 模型基于 SLDC 每 5 分钟采集的历史数据预测每日电力负荷模式。
 
             ''')
-        with st.expander('Delhi SLDC Operational Map'):
+        with st.expander('德里邦调度中心运营地图'):
             map_data = pd.DataFrame({
                 'latitude': [28.6139],
                 'longitude': [77.2090]
@@ -84,34 +80,34 @@ def year_load(data, selected_year):
 
         with average_daily_load_full_year_card:
             with st.container(border=True):
-                st.info('Average Load per Day')
-                st.metric(label='Average Load per Day',
+                st.info('日均负荷')
+                st.metric(label='日均负荷',
                           value=str(average_daily_load_full_year) + ' MW',
                           label_visibility='collapsed')
             with st.container(border=True):
-                year_data_per_day = data.resample('D', on='datetime').median()
-                year_data_per_day.rename(columns={'load': 'Load in MW'}, inplace=True)
-                st.line_chart(data=year_data_per_day, y='Load in MW', use_container_width=True, color='#BED754')
+                year_data_per_day = data.resample('D', on='时间').median()
+                year_data_per_day.rename(columns={'load': '负荷 (MW)'}, inplace=True)
+                st.line_chart(data=year_data_per_day, y='负荷 (MW)', use_container_width=True, color='#BED754')
         with cumulative_energy_full_year_card:
             with st.container(border=True):
-                st.info('Total Energy Generated')
-                st.metric(label='Total Energy Generated',
+                st.info('总发电量')
+                st.metric(label='总发电量',
                           value=str(cumulative_energy_full_year_GWh) + ' GWh',
                           label_visibility='collapsed')
 
             with st.container(border=True):
-                year_data_per_month = data.resample('M', on='datetime').apply(custom_resampler)
-                year_data_per_month.rename(columns={'load': 'Energy in GWh'}, inplace=True)
-                st.bar_chart(data=year_data_per_month, y='Energy in GWh', use_container_width=True, color='#BED754')
+                year_data_per_month = data.resample('M', on='时间').apply(custom_resampler)
+                year_data_per_month.rename(columns={'load': '发电量 (GWh)'}, inplace=True)
+                st.bar_chart(data=year_data_per_month, y='发电量 (GWh)', use_container_width=True, color='#BED754')
 
 
 def month_load(data, selected_month):
-    month_data = data[data['datetime'].dt.month == selected_month]
+    month_data = data[data['时间'].dt.month == selected_month]
     average_daily_load = int(month_data['load'].mean())
     average_daily_load_delta = int(average_daily_load - data['load'].mean())
     average_daily_load_delta_percentage = round(average_daily_load_delta / average_daily_load * 100, 2)
 
-    cumulative_energy_per_month = data.resample('M', on='datetime').sum()
+    cumulative_energy_per_month = data.resample('M', on='时间').sum()
     cumulative_month_energy = int(month_data['load'].sum())
     cumulative_month_energy_GWh = round(cumulative_month_energy / (12 * 1000), 2)
     cumulative_month_energy_delta = int(cumulative_month_energy - cumulative_energy_per_month['load'].mean())
@@ -121,47 +117,47 @@ def month_load(data, selected_month):
         average_month_load_card, cumulative_month_energy_card = st.columns(2, gap='medium')
         with average_month_load_card:
             with st.container(border=True):
-                st.info('Average Load per Day')
-                st.metric(label='Average Load per Day',
+                st.info('日均负荷')
+                st.metric(label='日均负荷',
                           value=str(average_daily_load) + ' MW',
                           delta=str(average_daily_load_delta_percentage) + ' %',
                           label_visibility='collapsed')
 
             with st.container(border=True):
-                month_data_resampled_H = month_data.resample('H', on='datetime').median()
-                month_data_resampled_H.rename(columns={'load': 'Load in MW'}, inplace=True)
+                month_data_resampled_H = month_data.resample('H', on='时间').median()
+                month_data_resampled_H.rename(columns={'load': '负荷 (MW)'}, inplace=True)
                 # st.line_chart(data=monthly_data, x='datetime', y='load', width=300, color='#f8007a')
                 # st.line_chart(data=monthly_data, x='datetime', y='Load in MW', width=300)
-                st.line_chart(data=month_data_resampled_H, y='Load in MW')
+                st.line_chart(data=month_data_resampled_H, y='负荷 (MW)')
 
         with cumulative_month_energy_card:
             with st.container(border=True):
-                st.info('Total Energy Generated')
-                st.metric(label='Total Energy Generated',
+                st.info('当月总发电量')
+                st.metric(label='当月总发电量',
                           value=str(cumulative_month_energy_GWh) + ' GWh',
                           delta=str(cumulative_month_energy_delta_percentage) + ' %',
                           label_visibility='collapsed')
             with st.container(border=True):
-                month_data_resampled_D = month_data.resample('D', on='datetime').apply(custom_resampler)
-                month_data_resampled_D.rename(columns={'load': 'Energy in GWh'}, inplace=True)
+                month_data_resampled_D = month_data.resample('D', on='时间').apply(custom_resampler)
+                month_data_resampled_D.rename(columns={'load': '发电量 (GWh)'}, inplace=True)
                 # st.bar_chart(monthly_data, color='#f95959')
-                st.bar_chart(data=month_data_resampled_D, y='Energy in GWh')
+                st.bar_chart(data=month_data_resampled_D, y='发电量 (GWh)')
 
 
 def day_load(data, selected_date):
     # Filter data for the selected date
-    selected_data = data[data['datetime'].dt.date == selected_date]
-    selected_data.rename(columns={'load': 'Load in MW'}, inplace=True)
+    selected_data = data[data['时间'].dt.date == selected_date]
+    selected_data.rename(columns={'load': '负荷 (MW)'}, inplace=True)
     # st.dataframe(selected_data)
     # selected_data.to_excel('selected_data.xlsx')
     # print(selected_data.head())
-    st.line_chart(data=selected_data, x='datetime', y='Load in MW', use_container_width=True, color='#ff8011')
+    st.line_chart(data=selected_data, x='时间', y='负荷 (MW)', use_container_width=True, color='#ff8011')
 
 
 def load_prediction():
     predicted_data = pd.read_excel('utilities/datasets/selected_data.xlsx')
     predicted_data.drop(columns=['Unnamed: 0'], inplace=True)
-    predicted_data.rename(columns={'load': 'Predicted Load in MW'}, inplace=True)
+    predicted_data.rename(columns={'Load in MW': '实际负荷 (MW)', 'load': '预测负荷 (MW)', 'datetime': '时间'}, inplace=True)
     # predicted_data = predicted_data.set_index('datetime')
     print(predicted_data.head())
     # st.dataframe(predicted_data)
@@ -171,107 +167,107 @@ def load_prediction():
 
         with actual_graph:
             with st.container(border=True):
-                st.markdown('#### Actual Load')
-                st.line_chart(data=predicted_data, x='datetime',
-                              y="Load in MW",
+                st.markdown('#### 实际负荷')
+                st.line_chart(data=predicted_data, x='时间',
+                              y="实际负荷 (MW)",
                               color=['#ff8011'], use_container_width=True)
         with predicted_graph:
             with st.container(border=True):
-                st.markdown('#### Predicted Load')
-                st.line_chart(data=predicted_data, x='datetime',
-                              y="Predicted Load in MW",
+                st.markdown('#### 预测负荷')
+                st.line_chart(data=predicted_data, x='时间',
+                              y="预测负荷 (MW)",
                               color=["#83c9ff"],
                               use_container_width=True)
 
         actual_vs_predicted_graph, prediction_metrics = st.columns(2, gap='medium')
         with actual_vs_predicted_graph:
             with st.container(border=True):
-                st.markdown('#### Actual vs Predicted Load')
-                st.line_chart(data=predicted_data, x='datetime',
-                              y=["Load in MW", "Predicted Load in MW"],
+                st.markdown('#### 实际负荷 vs 预测负荷')
+                st.line_chart(data=predicted_data, x='时间',
+                              y=["实际负荷 (MW)", "预测负荷 (MW)"],
                               color=['#ff8011', '#83c9ff'], use_container_width=True)
 
         with prediction_metrics:
-            RMSE = round(np.sqrt(np.mean((predicted_data['Load in MW'] - predicted_data['Predicted Load in MW']) ** 2)),
+            RMSE = round(np.sqrt(np.mean((predicted_data['实际负荷 (MW)'] - predicted_data['预测负荷 (MW)']) ** 2)),
                          3)
-            MAE = round(np.mean(np.abs(predicted_data['Load in MW'] - predicted_data['Predicted Load in MW'])), 3)
+            MAE = round(np.mean(np.abs(predicted_data['实际负荷 (MW)'] - predicted_data['预测负荷 (MW)'])), 3)
             MAPE = round(np.mean(np.abs(
-                (predicted_data['Load in MW'] - predicted_data['Predicted Load in MW']) / predicted_data[
-                    'Load in MW'])), 3) * 100
+                (predicted_data['实际负荷 (MW)'] - predicted_data['预测负荷 (MW)']) / predicted_data[
+                    '实际负荷 (MW)'])), 3) * 100
             accuracy = round(100 - MAPE, 3)
             with st.container(border=True):
-                st.markdown('#### Prediction Metrics')
+                st.markdown('#### 预测指标')
                 col1, col2 = st.columns(2, gap='small')
                 with col1:
                     with st.container(border=True):
-                        st.info('RMSE')
+                        st.info('RMSE (均方根误差)')
                         st.metric(label='RMSE',
                                   value=str(RMSE) + ' MW',
                                   label_visibility='collapsed')
                     with st.container(border=True):
-                        st.info('MAE')
+                        st.info('MAE (平均绝对误差)')
                         st.metric(label='MAE',
                                   value=str(MAE) + ' MW',
                                   label_visibility='collapsed')
 
                 with col2:
                     with st.container(border=True):
-                        st.info('MAPE')
+                        st.info('MAPE (平均绝对百分比误差)')
                         st.metric(label='MAPE',
                                   value=str(MAPE) + ' %',
                                   label_visibility='collapsed')
                     with st.container(border=True):
-                        st.info('Accuracy')
-                        st.metric(label='Accuracy',
+                        st.info('准确率')
+                        st.metric(label='准确率',
                                   value=str(accuracy) + ' %',
                                   label_visibility='collapsed')
 
 
 @st.cache_data
 def get_min_max_date(data):
-    min_date = data['datetime'].min().date()
-    max_date = data['datetime'].max().date()
+    min_date = data['时间'].min().date()
+    max_date = data['时间'].max().date()
     return min_date, max_date
 
 
 # data_2024 = load_data_2024()
 
-st.title('Intelligent Load Forecasting for Enhanced Energy Management in Smart Grids')
+st.title('智能电网负荷预测系统 - 智慧能源管理')
 st.markdown('---')
 description()
 
-st.sidebar.header('Select Data')
+st.sidebar.header('数据选择')
 st.markdown('---')
 
 # Year-wise load
-st.header('Yearly Load Curve')
+st.header('年度负荷曲线')
 with st.sidebar:
-    selected_year = st.selectbox('Select a year', [2023, 2024])
+    selected_year = st.selectbox('选择年份', [2023, 2024])
 
 data = load_data(selected_year)
 year_load(data, selected_year)
 st.markdown('---')
 
 # Month-wise load
-st.header('Monthly Load Curve ')
+st.header('月度负荷曲线')
 
 with st.sidebar:
-    selected_month = st.selectbox('Select a month', data['datetime'].dt.month.unique())
+    selected_month = st.selectbox('选择月份', data['时间'].dt.month.unique())
 month_load(data, selected_month)
 st.markdown('---')
 
 # Day-wise load
-st.header('Daily Load Curve ')
+st.header('日度负荷曲线')
 with st.sidebar:
     min_date, max_date = get_min_max_date(data)
     default_date = min_date + (max_date - min_date) // 2
-    selected_date = st.date_input('Select a date', default_date, min_value=min_date, max_value=max_date)
+    selected_date = st.date_input('选择日期', default_date, min_value=min_date, max_value=max_date)
 day_load(data, selected_date)
 
 st.markdown('---')
 
 # Load Prediction
-st.header('Load Prediction')
+st.header('负荷预测')
 load_prediction()
 
 
